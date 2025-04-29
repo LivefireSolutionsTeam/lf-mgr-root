@@ -3,14 +3,14 @@
 
 clear_mount () {
    # make sure we have clean mount points
-   mount | grep ${1} > /dev/null
+   mount | grep "${1}" > /dev/null
    if [ $? = 1 ];then   # /wmchol is not mounted
       echo "Clearing ${1}..."
-      rm -rf ${1} > /dev/null 2>&1
-      mkdir ${1}
-      chown holuser ${1}
-      chgrp holuser ${1}
-      chmod 775 ${1}
+      rm -rf "${1}" > /dev/null 2>&1
+      mkdir "${1}"
+      chown holuser "${1}"
+      chgrp holuser "${1}"
+      chmod 775 "${1}"
 fi
 }
 
@@ -20,7 +20,7 @@ secure_holuser () {
   if [ "${vlp_cloud}" != "NOT REPORTED" ] ;then
     echo "PRODUCTION - SECURING HOLUSER."
     cat ~root/test2.txt | mcrypt -d -k bca -q > ~root/clear.txt
-    pw=`cat ~root/clear.txt`
+    pw=$(cat ~root/clear.txt)
     passwd holuser <<END
 $pw
 $pw
@@ -30,7 +30,7 @@ END
        mv ~holuser/.ssh/authorized_keys ~holuser/.ssh/unauthorized_keys
     fi
     # secure the router
-    /usr/bin/sshpass -p $pw ssh -o StrictHostKeyChecking=accept-new root@router "rm /root/.ssh/authorized_keys"
+    /usr/bin/sshpass -p "$pw" ssh -o StrictHostKeyChecking=accept-new root@router "rm /root/.ssh/authorized_keys"
  else
    echo "NORMAL HOLUSER."
      passwd holuser <<END
@@ -46,7 +46,7 @@ END
 
 maincon="console"
 # the password MUST be hardcoded here in order to complete the mount
-password=`cat /home/holuser/creds.txt`
+password=$(cat /home/holuser/creds.txt)
 configini="/tmp/config.ini"
 LMC=false
 lmcbookmarks="holuser@${maincon}:/home/holuser/.config/gtk-3.0/bookmarks"
@@ -113,7 +113,7 @@ while true;do
    sleep 2
 done
 
-if `nc -z $maincon 2049`;then
+if $(nc -z $maincon 2049);then
    echo "LMC detected. Performing NFS mount..."
    while [ ! -d /lmchol/home/holuser/desktop-hol ];do
       echo "Mounting / on the LMC to /lmchol..."
@@ -124,9 +124,9 @@ if `nc -z $maincon 2049`;then
 fi
 
 while [ ! -f /wmchol/hol/LabStartup.log ] && [ $LMC = false ];do
-   if `nc -z $maincon 445`;then
+   if $(nc -z $maincon 445);then
       echo "WMC detected. Performing administrative CIFS mount..."
-      mount -t cifs --verbose -o rw,user=Administrator,pass=${password},file_mode=0777,soft,dir_mode=0777,noserverino //${maincon}/C$/ /wmchol
+      mount -t cifs --verbose -o rw,user=Administrator,pass="${password}",file_mode=0777,soft,dir_mode=0777,noserverino //${maincon}/C$/ /wmchol
    fi
    sleep 2
 done
@@ -147,7 +147,7 @@ vlp_cloud="NOT REPORTED"
 while [ "${vlp_cloud}" = "NOT REPORTED" ];do
    sleep 5
    if [ -f $cloudinfo ];then
-      vlp_cloud=`cat $cloudinfo`
+      vlp_cloud=$(cat $cloudinfo)
       echo "vlp_cloud: $vlp_cloud"
       break
    fi
@@ -162,9 +162,9 @@ if [ $LMC = true ];then
    # remove the manager bookmark from nautilus
    if [ "${vlp_cloud}" != "NOT REPORTED" ] ;then
       echo "Removing manager bookmark from Nautilus."
-      sshpass -p ${password} scp ${sshoptions} ${lmcbookmarks} /root/bookmarks.orig
+      sshpass -p "${password}" scp "${sshoptions}" ${lmcbookmarks} /root/bookmarks.orig
       cat bookmarks.orig | grep -vi manager > /root/bookmarks
-      sshpass -p ${password} scp ${sshoptions} /root/bookmarks ${lmcbookmarks}
+      sshpass -p "${password}" scp "${sshoptions}" /root/bookmarks ${lmcbookmarks}
    else
       echo "Not removing manager bookmark from Nautilus."
    fi
