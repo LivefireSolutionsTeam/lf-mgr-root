@@ -15,7 +15,7 @@ cd /root || exit
 proxyready=$(nmap -p 3128 proxy | grep open)
 while [ $? != 0 ];do
    echo "Waiting for proxy to be ready..." >> ${logfile}
-   proxyready=$(nmap -p 3128 proxy | grep open)
+   export proxyready=$(nmap -p 3128 proxy | grep open)
    sleep 1
 done
 
@@ -30,7 +30,7 @@ while true;do
       > /tmp/rootgitdone
       break
    else
-      gitresult=$(grep 'could not be found' ${logfile})
+      export gitresult=$(grep 'could not be found' ${logfile})
       if [ $? = 0 ];then
          echo "The git project ${gitproject} does not exist." >> ${logfile}
          echo "FAIL - No GIT Project" > "$startupstatus"
